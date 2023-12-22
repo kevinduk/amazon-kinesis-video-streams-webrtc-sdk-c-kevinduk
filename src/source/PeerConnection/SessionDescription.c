@@ -437,8 +437,8 @@ STATUS populateSingleMediaSection(PKvsPeerConnection pKvsPeerConnection, PKvsRtp
     attributeNameBuffLen = SIZEOF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName);
     if (containRtx) {
         STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "msid");
-        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%s %sRTX", pRtcMediaStreamTrack->streamId,
-                pRtcMediaStreamTrack->trackId);
+        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%s %sRTX",
+                                 pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
         attributeNameBuffLen -= amountWritten;
         attributeCount++;
 
@@ -448,8 +448,8 @@ STATUS populateSingleMediaSection(PKvsPeerConnection pKvsPeerConnection, PKvsRtp
         attributeCount++;
     } else {
         STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "msid");
-        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%s %s", pRtcMediaStreamTrack->streamId,
-                pRtcMediaStreamTrack->trackId);
+        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%s %s",
+                                 pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
         attributeCount++;
     }
 
@@ -459,18 +459,18 @@ STATUS populateSingleMediaSection(PKvsPeerConnection pKvsPeerConnection, PKvsRtp
     attributeCount++;
 
     STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u msid:%s %s", pKvsRtpTransceiver->sender.ssrc,
-            pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
+    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u msid:%s %s",
+                             pKvsRtpTransceiver->sender.ssrc, pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
     attributeCount++;
 
     STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u mslabel:%s", pKvsRtpTransceiver->sender.ssrc,
-            pRtcMediaStreamTrack->streamId);
+    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u mslabel:%s",
+                             pKvsRtpTransceiver->sender.ssrc, pRtcMediaStreamTrack->streamId);
     attributeCount++;
 
     STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u label:%s", pKvsRtpTransceiver->sender.ssrc,
-            pRtcMediaStreamTrack->trackId);
+    amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u label:%s",
+                             pKvsRtpTransceiver->sender.ssrc, pRtcMediaStreamTrack->trackId);
     attributeCount++;
 
     if (containRtx) {
@@ -480,18 +480,18 @@ STATUS populateSingleMediaSection(PKvsPeerConnection pKvsPeerConnection, PKvsRtp
         attributeCount++;
 
         STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u msid:%s %sRTX", pKvsRtpTransceiver->sender.rtxSsrc,
-                pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
+        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u msid:%s %sRTX",
+                                 pKvsRtpTransceiver->sender.rtxSsrc, pRtcMediaStreamTrack->streamId, pRtcMediaStreamTrack->trackId);
         attributeCount++;
 
         STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u mslabel:%sRTX", pKvsRtpTransceiver->sender.rtxSsrc,
-                pRtcMediaStreamTrack->streamId);
+        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u mslabel:%sRTX",
+                                 pKvsRtpTransceiver->sender.rtxSsrc, pRtcMediaStreamTrack->streamId);
         attributeCount++;
 
         STRCPY(pSdpMediaDescription->sdpAttributes[attributeCount].attributeName, "ssrc");
-        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u label:%sRTX", pKvsRtpTransceiver->sender.rtxSsrc,
-                pRtcMediaStreamTrack->trackId);
+        amountWritten = SNPRINTF(pSdpMediaDescription->sdpAttributes[attributeCount].attributeValue, attributeNameBuffLen, "%u label:%sRTX",
+                                 pKvsRtpTransceiver->sender.rtxSsrc, pRtcMediaStreamTrack->trackId);
         attributeCount++;
     }
 

@@ -1022,8 +1022,8 @@ STATUS checkTurnPeerConnections(PTurnConnection pTurnConnection)
             CHK(pTurnPeer->pTransactionIdStore != NULL, STATUS_INVALID_OPERATION);
             transactionIdStoreInsert(pTurnPeer->pTransactionIdStore, pTurnConnection->pTurnCreatePermissionPacket->header.transactionId);
             iceUtilsSendStunPacket(pTurnConnection->pTurnCreatePermissionPacket, pTurnConnection->longTermKey,
-                                                ARRAY_SIZE(pTurnConnection->longTermKey), &pTurnConnection->turnServer.ipAddress,
-                                                pTurnConnection->pControlChannel, NULL, FALSE);
+                                   ARRAY_SIZE(pTurnConnection->longTermKey), &pTurnConnection->turnServer.ipAddress, pTurnConnection->pControlChannel,
+                                   NULL, FALSE);
 
         } else if (pTurnPeer->connectionState == TURN_PEER_CONN_STATE_BIND_CHANNEL) {
             // update peer address;
@@ -1043,9 +1043,8 @@ STATUS checkTurnPeerConnections(PTurnConnection pTurnConnection)
 
             CHK(pTurnPeer->pTransactionIdStore != NULL, STATUS_INVALID_OPERATION);
             transactionIdStoreInsert(pTurnPeer->pTransactionIdStore, pTurnConnection->pTurnChannelBindPacket->header.transactionId);
-            iceUtilsSendStunPacket(pTurnConnection->pTurnChannelBindPacket, pTurnConnection->longTermKey,
-                                                ARRAY_SIZE(pTurnConnection->longTermKey), &pTurnConnection->turnServer.ipAddress,
-                                                pTurnConnection->pControlChannel, NULL, FALSE);
+            iceUtilsSendStunPacket(pTurnConnection->pTurnChannelBindPacket, pTurnConnection->longTermKey, ARRAY_SIZE(pTurnConnection->longTermKey),
+                                   &pTurnConnection->turnServer.ipAddress, pTurnConnection->pControlChannel, NULL, FALSE);
         }
     }
 
