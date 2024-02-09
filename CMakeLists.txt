@@ -201,7 +201,6 @@ if(BUILD_DEPENDENCIES)
                   -DLWS_MBEDTLS_CRYPTO_LIBRARY=${MBEDTLS_CRYPTO_LIBRARY}
                   -DLWS_MBEDTLS_SSL_LIBRARY=${MBEDTLS_SSL_LIBRARY}
                   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-                  #-DLWS_MBEDTLS_INCLUDE_DIRS=/home/kevind/code/amazon-kinesis-video-streams-webrtc-sdk-c-H8XXX/amazon-kinesis-video-streams-webrtc-sdk-c/open-source/include
                   -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
   endif()
   cmake_print_variables(BUILD_ARGS)
