@@ -3,6 +3,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
 include(Utilities)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+include(CMakePrintHelpers)
 
 # The version MUST be updated before every release
 project(KinesisVideoWebRTCClient VERSION 1.8.1 LANGUAGES C)
@@ -76,14 +77,18 @@ endif()
 
 # static settings
 if(BUILD_STATIC_LIBS OR WIN32)
+  message("KD: Building static libs")
   set(LINKAGE STATIC)
   # Force CMake to find static libs
   if(WIN32)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
   else()
+    cmake_print_variables(CMAKE_FIND_LIBRARY_SUFFIXES)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    cmake_print_variables(CMAKE_FIND_LIBRARY_SUFFIXES)
   endif()
 else()
+  message("KD: Building shared libs")
   set(LINKAGE SHARED)
 endif()
 
@@ -110,26 +115,37 @@ elseif(USE_MBEDTLS)
     message(STATUS "Detected clang")
     set(CMAKE_C_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_CXX_FLAGS}")
-  else()
+  elseif("${CMAKE_C_COMPILER_ID}" MATCHES "GNU")
     message(STATUS "Detected gcc")
-    set(CMAKE_C_FLAGS "-Wno-error=stringop-overflow -I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "-Wno-error=stringop-overflow -I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/configs -DMBEDTLS_USER_CONFIG_FILE=\"<config_mbedtls.h>\" ${CMAKE_CXX_FLAGS}")
+    if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "7.0")
+      set(CMAKE_C_FLAGS "-Wno-error=stringop-overflow ${CMAKE_C_FLAGS}")
+      set(CMAKE_CXX_FLAGS "-Wno-error=stringop-overflow ${CMAKE_CXX_FLAGS}")
+    endif()
+  else()
+    message(FATAL_ERROR "Detected unsupported compiler: ${CMAKE_C_COMPILER_ID}")
   endif()
 endif()
 
 
 if(BUILD_DEPENDENCIES)
+  cmake_print_variables(OPEN_SRC_INSTALL_PREFIX)
   if(NOT EXISTS ${OPEN_SRC_INSTALL_PREFIX})
+    message("file MAKE_DIRECTORY")
     file(MAKE_DIRECTORY ${OPEN_SRC_INSTALL_PREFIX})
   endif()
 
   set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${OPEN_SRC_INSTALL_PREFIX}/lib/pkgconfig")
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${OPEN_SRC_INSTALL_PREFIX})
+  cmake_print_variables(PKG_CONFIG_PATH)
+  cmake_print_variables(CMAKE_PREFIX_PATH)
 
   message(STATUS "Begin building dependencies.")
 
   set(SSL_OPTIONS USE_OPENSSL USE_MBEDTLS)
   count_true(ENABLED_SSL_OPTION_COUNT ${SSL_OPTIONS})
+  cmake_print_variables(ENABLED_SSL_OPTION_COUNT)
 
   if(ENABLED_SSL_OPTION_COUNT GREATER "1")
     message(FATAL_ERROR "Only one of ${SSL_OPTIONS} can be enabled")
@@ -142,8 +158,12 @@ if(BUILD_DEPENDENCIES)
     build_dependency(openssl ${BUILD_ARGS})
     set(OPENSSL_ROOT_DIR ${OPEN_SRC_INSTALL_PREFIX})
   elseif(USE_MBEDTLS)
+    message("Using mbedtls")
+    cmake_print_variables(CMAKE_TOOLCHAIN_FILE)
     set(BUILD_ARGS -DBUILD_STATIC_LIBS=${BUILD_STATIC_LIBS}
-                   "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -std=c99")
+                   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+                    "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -std=c99")
+    cmake_print_variables(BUILD_ARGS)
     build_dependency(mbedtls ${BUILD_ARGS})
   endif()
 
@@ -163,6 +183,12 @@ if(BUILD_DEPENDENCIES)
                   -DLWS_OPENSSL_LIBRARIES=${OPENSSL_LIBRARIES_ALT_SEP}
                   -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
   else()
+    set(MBEDTLS_INCLUDE_DIRS "${OPEN_SRC_INSTALL_PREFIX}/include/")
+    # TODO: fix .a is only for static libraries
+    set(MBEDTLS_CRYPTO_LIBRARY "${OPEN_SRC_INSTALL_PREFIX}/lib/libmbedcrypto.a")
+    set(MBEDTLS_SSL_LIBRARY "${OPEN_SRC_INSTALL_PREFIX}/lib/libmbedtls.a")
+    set(MBEDTLS_X509_LIBRARY "${OPEN_SRC_INSTALL_PREFIX}/lib/libmbedx509.a")
+    set(MBEDTLS_LIBRARIES ${MBEDTLS_SSL_LIBRARY} ${MBEDTLS_CRYPTO_LIBRARY})
     set(BUILD_ARGS -DBUILD_STATIC_LIBS=${BUILD_STATIC_LIBS}
                   -DOPENSSL_DIR=${OPEN_SRC_INSTALL_PREFIX}
                   -DUSE_OPENSSL=${USE_OPENSSL}
@@ -170,8 +196,15 @@ if(BUILD_DEPENDENCIES)
                   -DLWS_OPENSSL_CRYPTO_LIBRARY=${OPENSSL_CRYPTO_LIBRARY}
                   -DLWS_OPENSSL_SSL_LIBRARY=${OPENSSL_SSL_LIBRARY}
                   -DLWS_OPENSSL_INCLUDE_DIRS=${OPENSSL_INCLUDE_DIR}
+                  -DLWS_MBEDTLS_INCLUDE_DIRS=${MBEDTLS_INCLUDE_DIRS}
+                  -DLWS_MBEDTLS_LIBRARIES=${MBEDTLS_LIBRARIES}
+                  -DLWS_MBEDTLS_CRYPTO_LIBRARY=${MBEDTLS_CRYPTO_LIBRARY}
+                  -DLWS_MBEDTLS_SSL_LIBRARY=${MBEDTLS_SSL_LIBRARY}
+                  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+                  #-DLWS_MBEDTLS_INCLUDE_DIRS=/home/kevind/code/amazon-kinesis-video-streams-webrtc-sdk-c-H8XXX/amazon-kinesis-video-streams-webrtc-sdk-c/open-source/include
                   -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
   endif()
+  cmake_print_variables(BUILD_ARGS)
   build_dependency(websockets ${BUILD_ARGS})
 
   set(BUILD_ARGS
@@ -181,13 +214,17 @@ if(BUILD_DEPENDENCIES)
       -DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BUILD_LIBSRTP_DESTINATION_PLATFORM}
       -DUSE_OPENSSL=${USE_OPENSSL}
       -DUSE_MBEDTLS=${USE_MBEDTLS}
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
       -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-  
+
+  cmake_print_variables(BUILD_ARGS)
   build_dependency(srtp ${BUILD_ARGS})
 
   set(BUILD_ARGS
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
       -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
 
+  cmake_print_variables(BUILD_ARGS)
   build_dependency(usrsctp ${BUILD_ARGS})
 
   if(BUILD_TEST)
@@ -214,7 +251,14 @@ set(BUILD_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DUSE_OPENSSL=${USE_OPENSSL}
         -DUSE_MBEDTLS=${USE_MBEDTLS}
+        -DKVS_MBEDTLS_LIBRARY=${MBEDTLS_SSL_LIBRARY}
+        -DKVS_MBEDX509_LIBRARY=${MBEDTLS_X509_LIBRARY}
+        -DKVS_MBEDCRYPTO_LIBRARY=${MBEDTLS_CRYPTO_LIBRARY}
+        -DMBEDTLS_INCLUDE_DIRS=${MBEDTLS_INCLUDE_DIRS}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
         -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+
+cmake_print_variables(BUILD_ARGS)
 build_dependency(kvsCommonLws ${BUILD_ARGS})
 
 ############# find dependent libraries ############
@@ -225,6 +269,7 @@ if (USE_OPENSSL)
   find_package(OpenSSL REQUIRED)
   set(OPEN_SRC_INCLUDE_DIRS ${OPEN_SRC_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 else()
+  message("find_package MbedTLS")
   find_package(MbedTLS REQUIRED)
   set(OPEN_SRC_INCLUDE_DIRS ${OPEN_SRC_INCLUDE_DIRS} ${MBEDTLS_INCLUDE_DIRS})
 endif()

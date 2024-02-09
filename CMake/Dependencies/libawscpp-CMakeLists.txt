@@ -7,6 +7,7 @@ ExternalProject_Add(libawscpp-download
     GIT_TAG           1.11.157
     LIST_SEPARATOR    "|"
     CMAKE_ARGS       -DBUILD_SHARED_LIBS=OFF
+                     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                      -DBUILD_ONLY=kinesisvideo|kinesis-video-webrtc-storage
                      -DCMAKE_INSTALL_PREFIX=${OPEN_SRC_INSTALL_PREFIX}
     BUILD_ALWAYS      TRUE

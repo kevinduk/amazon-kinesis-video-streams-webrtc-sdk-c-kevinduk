@@ -8,6 +8,8 @@ include(ExternalProject)
 ExternalProject_Add(project_libgperftools
     URL               https://github.com/gperftools/gperftools/releases/download/gperftools-2.8/gperftools-2.8.zip
     PREFIX            ${CMAKE_CURRENT_BINARY_DIR}/build
+    CMAKE_ARGS
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
     CONFIGURE_COMMAND ${CONFIGURE_COMMAND}
     TEST_COMMAND      ""
 )
