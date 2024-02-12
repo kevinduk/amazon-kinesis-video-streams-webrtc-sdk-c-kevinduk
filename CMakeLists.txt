@@ -3,6 +3,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
 include(Utilities)
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+include(CMakePrintHelpers)
 
 # The version MUST be updated before every release
 project(KinesisVideoWebRTCClient VERSION 1.8.1 LANGUAGES C)
@@ -160,11 +161,13 @@ if(BUILD_DEPENDENCIES)
   elseif(USE_MBEDTLS)
     set(BUILD_ARGS -DBUILD_STATIC_LIBS=${BUILD_STATIC_LIBS}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                     "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -std=c99")
       build_dependency(mbedtls ${BUILD_ARGS})
   endif()
 
 
+  set(MBEDTLS_INCLUDE_DIRS "${OPEN_SRC_INSTALL_PREFIX}/include/")
   if(WIN32)
     set(OPENSSL_INCLUDE_DIRS "${OPEN_SRC_INSTALL_PREFIX}/include/")
     set(OPENSSL_CRYPTO_LIBRARY "${OPEN_SRC_INSTALL_PREFIX}/lib/libcrypto.lib")
@@ -189,6 +192,8 @@ if(BUILD_DEPENDENCIES)
                   -DLWS_OPENSSL_CRYPTO_LIBRARY=${OPENSSL_CRYPTO_LIBRARY}
                   -DLWS_OPENSSL_SSL_LIBRARY=${OPENSSL_SSL_LIBRARY}
                   -DLWS_OPENSSL_INCLUDE_DIRS=${OPENSSL_INCLUDE_DIR}
+                  -DLWS_MBEDTLS_INCLUDE_DIRS=${MBEDTLS_INCLUDE_DIRS}
+                  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                   -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
   endif()
   build_dependency(websockets ${BUILD_ARGS})
@@ -201,12 +206,14 @@ if(BUILD_DEPENDENCIES)
       -DBUILD_LIBSRTP_DESTINATION_PLATFORM=${BUILD_LIBSRTP_DESTINATION_PLATFORM}
       -DUSE_OPENSSL=${USE_OPENSSL}
       -DUSE_MBEDTLS=${USE_MBEDTLS}
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
       -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
 
   build_dependency(srtp ${BUILD_ARGS})
 
   set(BUILD_ARGS
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
       -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
 
   build_dependency(usrsctp ${BUILD_ARGS})
@@ -235,7 +242,12 @@ set(BUILD_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DUSE_OPENSSL=${USE_OPENSSL}
         -DUSE_MBEDTLS=${USE_MBEDTLS}
+        -DMBEDTLS_INCLUDE_DIRS=${MBEDTLS_INCLUDE_DIRS}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+        -DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH}
         -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+
+cmake_print_variables(BUILD_ARGS)
 build_dependency(kvsCommonLws ${BUILD_ARGS})
 
 ############# find dependent libraries ############
